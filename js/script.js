@@ -12,7 +12,7 @@ const modalOpenBtn = document.querySelectorAll('[data-modal]'),
 
 const forms = document.querySelectorAll('form'),
     formsMessage = {
-        loading: 'Загрузка',
+        loading: 'img/spinner.svg',
         success: 'Спасибо! Скоро мы с вами свяжемся',
         failure: 'Что-то пошло не так...'
     };
@@ -210,21 +210,26 @@ function postData(form) {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const statusMessage = document.createElement('div');
-        statusMessage.classList.add('status');
-        statusMessage.textContent = formsMessage.loading;
-        form.append(statusMessage);
+        const statusMessage = document.createElement('img');
+        statusMessage.src = formsMessage.loading;
+
+        statusMessage.style.cssText = `
+            display: block;
+            margin: 0 auto;
+        `;
+        // form.append(statusMessage);
+        form.insertAdjacentElement('afterend', statusMessage);
 
         const request = new XMLHttpRequest();
         request.open('POST', 'server.php');
-        request.setRequestHeader('Content-type', 'application/json'); 
+        request.setRequestHeader('Content-type', 'application/json');
 
         const formData = new FormData(form); // Собираем данные с определенной формы
         console.log(formData);
 
         const object = {};
 
-        formData.forEach(function(value, key) {
+        formData.forEach(function (value, key) {
             object[key] = value;
         });
         const json = JSON.stringify(object);
@@ -234,16 +239,36 @@ function postData(form) {
         request.addEventListener('load', () => {
             if (request.status === 200) {
                 console.log(request.response);
-                statusMessage.textContent = formsMessage.success;
+                showThanksModal(formsMessage.success);
                 form.reset();
-                setTimeout(() => {
-                    statusMessage.remove();
-                }, 2000);
+                statusMessage.remove();
             } else {
-                statusMessage.textContent = formsMessage.failure;
+                showThanksModal(formsMessage.failure);
             }
         });
-
     });
 }
 
+function showThanksModal() {
+    const prevModalDialog = document.querySelector('.modal__dialog');
+
+    prevModalDialog.classList.add('hide');
+    toggleModal();
+
+    const thanksModal = document.createElement('div');
+    thanksModal.classList.add(' modal__dialog');
+    thanksModal.innerHTML = `
+            <div class="modal__content">
+                <div class="modal__close" data-close>x</div>
+                <div class="modal__title">${formsMessage}</div>
+            </div>
+        `;
+
+    document.querySelector('.modal').append(thanksModal);
+
+    setTimeout(() => {
+        thanksModal.remove();
+        prevModalDialog.classList.add('show');
+        prevModalDialog.classList.remove('hide');
+    }, 4000);
+}
