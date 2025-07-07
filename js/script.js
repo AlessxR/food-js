@@ -10,6 +10,13 @@ const modalOpenBtn = document.querySelectorAll('[data-modal]'),
     modalCloseBtn = document.querySelector('[data-close]'),
     modalTimerId = setTimeout(toggleModal, 5000);
 
+const forms = document.querySelectorAll('form'),
+    formsMessage = {
+        loading: 'Загрузка',
+        success: 'Спасибо! Скоро мы с вами свяжемся',
+        failure: 'Что-то пошло не так...'
+    };
+
 const menuItem = document.querySelectorAll('.menu__item');
 const deadline = '2025-07-12';
 
@@ -140,17 +147,18 @@ function showModalByScroll() {
 window.addEventListener('scroll', showModalByScroll);
 
 class Card {
-    constructor(image, header, descr, price, parentSelector) {
+    constructor(image, header, descr, price, parentSelector, ...classes) {
         this.image = image;
         this.header = header;
         this.descr = descr;
         this.price = price;
+        this.clasess = classes;
         this.parent = document.querySelector(parentSelector);
     }
 
     render() {
         const element = document.createElement('div');
-        element.classList.add('menu__item');
+        this.clasess.forEach(className => element.classList.add(className));
         element.innerHTML = `
             <img src="${this.image}" alt="vegy">
             <h3 class="menu__item-subtitle">${this.header}</h3>
@@ -170,7 +178,9 @@ const card1 = new Card(
     'Меню "Фитнес"',
     "Меню 'Фитнес' - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!",
     459,
-    '.menu .container' // 👉 сюда вставится карточка
+    '.menu .container',
+    'menu__item',
+    'big'
 ).render();
 
 const card2 = new Card(
@@ -178,7 +188,8 @@ const card2 = new Card(
     'Меню “Премиум”',
     'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
     550,
-    '.menu .container'
+    '.menu .container',
+    'menu__item'
 ).render();
 
 const card3 = new Card(
@@ -186,6 +197,53 @@ const card3 = new Card(
     'Меню "Постное"',
     'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
     430,
-    '.menu .container'
+    '.menu .container',
+    'menu__item'
 ).render();
+
+forms.forEach(item => {
+    postData(item);
+})
+
+// Forms
+function postData(form) {
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const statusMessage = document.createElement('div');
+        statusMessage.classList.add('status');
+        statusMessage.textContent = formsMessage.loading;
+        form.append(statusMessage);
+
+        const request = new XMLHttpRequest();
+        request.open('POST', 'server.php');
+        request.setRequestHeader('Content-type', 'application/json'); 
+
+        const formData = new FormData(form); // Собираем данные с определенной формы
+        console.log(formData);
+
+        const object = {};
+
+        formData.forEach(function(value, key) {
+            object[key] = value;
+        });
+        const json = JSON.stringify(object);
+
+        request.send(json); // Отправляем форму на сервер теперь
+
+        request.addEventListener('load', () => {
+            if (request.status === 200) {
+                console.log(request.response);
+                statusMessage.textContent = formsMessage.success;
+                form.reset();
+                setTimeout(() => {
+                    statusMessage.remove();
+                }, 2000);
+            } else {
+                statusMessage.textContent = formsMessage.failure;
+            }
+        });
+
+    });
+}
 
