@@ -159,6 +159,7 @@ class Card {
     render() {
         const element = document.createElement('div');
         this.clasess.forEach(className => element.classList.add(className));
+        element.classList.add('menu__item');
         element.innerHTML = `
             <img src="${this.image}" alt="vegy">
             <h3 class="menu__item-subtitle">${this.header}</h3>
@@ -171,42 +172,67 @@ class Card {
         `;
         this.parent.append(element);
     }
-}
+};
 
-const card1 = new Card(
-    "img/tabs/vegy.jpg",
-    'Меню "Фитнес"',
-    "Меню 'Фитнес' - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!",
-    459,
-    '.menu .container',
-    'menu__item',
-    'big'
-).render();
+const getResources = async (url) => {
+    const res = await fetch(url);
 
-const card2 = new Card(
-    "img/tabs/elite.jpg",
-    'Меню “Премиум”',
-    'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-    550,
-    '.menu .container',
-    'menu__item'
-).render();
+    if (!res.ok) {
+        throw new Error(`Could not fetch ${url}, status ${res.status}`);
+    }
 
-const card3 = new Card(
-    "img/tabs/post.jpg",
-    'Меню "Постное"',
-    'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-    430,
-    '.menu .container',
-    'menu__item'
-).render();
+    return await res.json();
+};
+
+// getResources('http://localhost:3000/menu')
+//     .then(data => {
+//         data.forEach(({ img, title, descr, price }) => {
+//             new Card(img, title, descr, price, '.menu .container').render();
+//         });
+//     });
+
+getResources('http://localhost:3000/menu')
+.then(data => createCard(data));
+
+// function createCard(data) {
+//     data.forEach(({img, title, descr, price}) => {
+//         const element = document.createElement('div');
+//         element.classList.add('menu__item');
+
+//         element.innerHTML = `
+//             <img src="${img}" alt="vegy">
+//             <h3 class="menu__item-subtitle">${title}</h3>
+//             <div class="menu__item-descr">${descr}</div>
+//             <div class="menu__item-divider"></div>
+//             <div class="menu__item-price">
+//                 <div class="menu__item-cost">Цена:</div>
+//                 <div class="menu__item-total"><span>${price}</span> грн/день</div>
+//             </div>
+//         `;
+
+//         document.querySelector('.menu .container').append(element);
+//     });
+// } Второй способ создания с БД
 
 forms.forEach(item => {
-    postData(item);
-})
+    bindPostData(item);
+});
+
+// Настраиваение запроса к серверу, получение ответа и трансформируется в json
+const postData = async (url, data) => {
+    const result = await fetch(url, {
+        method: "POST",
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: data
+    });
+
+    return await result.json();
+};
 
 // Forms
-function postData(form) {
+function bindPostData(form) {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
@@ -228,36 +254,32 @@ function postData(form) {
         const formData = new FormData(form); // Собираем данные с определенной формы
         console.log(formData);
 
-        const object = {};
-        formData.forEach(function (value, key) {
-            object[key] = value;
-        });
+        // const object = {};
+        // formData.forEach(function (value, key) {
+        //     object[key] = value;
+        // });
+
+        const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
         // const json = JSON.stringify(object);
 
         // request.send(json); // Отправляем форму на сервер теперь
 
         // NEW FETCH
-        fetch('server.php', {
-            method: 'POST',
-            // headers: {
-            //     'Content-type': 'application/json'
-            // },
-            body : JSON.stringify(object)
-        })
-        .then(data => data.text())
-        .then(data => {
-            console.log(data);
-            showThanksModal(formsMessage.success);
-            // form.reset();
-            statusMessage.remove();    
-        })
-        .catch(() => {
-            showThanksModal(formsMessage.failure);
-        })
-        .finally(() => {
-            form.reset();
-        });
+
+        postData('http://localhost:3000/requests', json)
+            .then(data => {
+                console.log(data);
+                showThanksModal(formsMessage.success);
+                // form.reset();
+                statusMessage.remove();
+            })
+            .catch(() => {
+                showThanksModal(formsMessage.failure);
+            })
+            .finally(() => {
+                form.reset();
+            });
 
 
         // request.addEventListener('load', () => {
@@ -271,7 +293,7 @@ function postData(form) {
         //     }
         // });
     });
-}
+};
 
 function showThanksModal() {
     const prevModalDialog = document.querySelector('.modal__dialog');
@@ -295,4 +317,8 @@ function showThanksModal() {
         prevModalDialog.classList.add('show');
         prevModalDialog.classList.remove('hide');
     }, 4000);
-}
+};
+
+fetch('http://localhost:3000/menu')
+    .then(data => data.json())
+    .then(res => console.log(res));
