@@ -17,9 +17,17 @@ const forms = document.querySelectorAll('form'),
         failure: 'Что-то пошло не так...'
     };
 
+const slides = document.querySelectorAll('.offer__slide'),
+    prevArrow = document.querySelector('.offer__slider-prev'),
+    nextArrow = document.querySelector('.offer__slider-next'),
+    total = document.querySelector('#total'),
+    currentBlock = document.querySelector('#current');
+
+let slideIndex = 1;
+
+
 const menuItem = document.querySelectorAll('.menu__item');
 const deadline = '2025-07-12';
-
 
 // Скрытие контента
 function hideTabContent() {
@@ -119,8 +127,6 @@ setClock('.timer', deadline);
 
 // Modal Window
 function toggleModal() {
-    // modal.classList.toggle('show');
-    // modal.classList.toggle('hide');
 
     if (modalOpenBtn) {
         modal.classList.toggle('show');
@@ -174,25 +180,12 @@ class Card {
     }
 };
 
-const getResources = async (url) => {
-    const res = await fetch(url);
 
-    if (!res.ok) {
-        throw new Error(`Could not fetch ${url}, status ${res.status}`);
-    }
-
-    return await res.json();
-};
-
-// getResources('http://localhost:3000/menu')
-//     .then(data => {
-//         data.forEach(({ img, title, descr, price }) => {
-//             new Card(img, title, descr, price, '.menu .container').render();
-//         });
-//     });
-
-getResources('http://localhost:3000/menu')
-.then(data => createCard(data));
+axios.get('http://localhost:3000/menu').then(data => {
+    data.data.forEach(({img, title, descr, price}) => {
+        new Card(img, title, descr, price, '.menu .container').render();
+    });
+});
 
 // function createCard(data) {
 //     data.forEach(({img, title, descr, price}) => {
@@ -243,29 +236,15 @@ function bindPostData(form) {
             display: block;
             margin: 0 auto;
         `;
-        // form.append(statusMessage);
+
         form.insertAdjacentElement('afterend', statusMessage);
 
-        // OLD
-        // const request = new XMLHttpRequest();
-        // request.open('POST', 'server.php');
-        // request.setRequestHeader('Content-type', 'application/json');
 
         const formData = new FormData(form); // Собираем данные с определенной формы
         console.log(formData);
 
-        // const object = {};
-        // formData.forEach(function (value, key) {
-        //     object[key] = value;
-        // });
 
         const json = JSON.stringify(Object.fromEntries(formData.entries()));
-
-        // const json = JSON.stringify(object);
-
-        // request.send(json); // Отправляем форму на сервер теперь
-
-        // NEW FETCH
 
         postData('http://localhost:3000/requests', json)
             .then(data => {
@@ -280,18 +259,6 @@ function bindPostData(form) {
             .finally(() => {
                 form.reset();
             });
-
-
-        // request.addEventListener('load', () => {
-        //     if (request.status === 200) {
-        //         console.log(request.response);
-        //         showThanksModal(formsMessage.success);
-        //         form.reset();
-        //         statusMessage.remove();
-        //     } else {
-        //         showThanksModal(formsMessage.failure);
-        //     }
-        // });
     });
 };
 
@@ -322,3 +289,46 @@ function showThanksModal() {
 fetch('http://localhost:3000/menu')
     .then(data => data.json())
     .then(res => console.log(res));
+
+// Slider
+function showSlides(indexSlide) {
+    if (indexSlide > slides.length) {
+        slideIndex = 1;
+    }
+
+    if (indexSlide < 1) {
+        slideIndex = slides.length;
+    }
+
+    slides.forEach(slide => {
+        slide.style.display = 'none';
+    });
+
+    slides[slideIndex - 1].style.display = 'block';
+
+    if (slides.length < 10) {
+        currentBlock.textContent = `0${slideIndex}`;
+    } else {
+        currentBlock.textContent = slideIndex;
+    }
+};
+
+function plusSlides(indexSlide) {
+    showSlides(slideIndex += indexSlide);
+}
+
+prevArrow.addEventListener('click', () => {
+    plusSlides(-1);
+});
+
+nextArrow.addEventListener('click', () => {
+    plusSlides(+1);
+});
+
+showSlides(slideIndex); 
+
+if (slides.length < 10) {
+    total.textContent = `0${slides.length}`;
+} else {
+    total.textContent = `${slides.length}`;
+}
