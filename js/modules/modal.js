@@ -3,6 +3,8 @@ function modal() {
         modal = document.querySelector('.modal'),
         modalCloseBtn = document.querySelector('[data-close]'),
         modalTimerId = setTimeout(toggleModal, 5000);
+
+    
     function toggleModal() {
 
         if (modalOpenBtn) {
@@ -54,4 +56,4 @@ function modal() {
     };
 }
 
-module.exports = modal;
+export default modal;

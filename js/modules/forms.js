@@ -1,3 +1,5 @@
+import { toggleModal } from "./modal";
+
 function forms() {
     const forms = document.querySelectorAll('form'),
         formsMessage = {
@@ -66,4 +68,4 @@ function forms() {
 
 }
 
-module.exports = forms;
+export default forms;
