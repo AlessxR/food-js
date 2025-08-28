@@ -1,5 +1,10 @@
 function timer() {
-    const deadline = '2025-07-12';
+
+    // console.log('Started');
+
+    const deadline = '2025-10-12';
+
+    // console.log(deadline);
 
     function getTimeRemaining(endtime) {
         let days, hours, minutes, seconds;
@@ -20,7 +25,7 @@ function timer() {
             hours,
             minutes,
             seconds
-        };
+        }
     };
 
     function getZero(num) {
@@ -49,7 +54,7 @@ function timer() {
             minutes.innerHTML = getZero(t.minutes);
             seconds.innerHTML = getZero(t.seconds);
 
-            if (t <= 0) {
+            if (t.t <= 0) {
                 clearInterval(timeInterval);
             }
         };

@@ -32,7 +32,6 @@ function calculator() {
 
     calcTotal();
 
-
     function getStaticInformation(selector, activeClass) {
         const elements = document.querySelectorAll(selector);
 
@@ -44,7 +43,7 @@ function calculator() {
                     // console.log(ratio);
                 } else {
                     sex = event.target.getAttribute('id');
-                    localStorage.setItem('sex', +event.target.getAttribute('sex'));
+                    localStorage.setItem('sex', event.target.getAttribute('id'));
                     // console.log(sex);
                 }
 

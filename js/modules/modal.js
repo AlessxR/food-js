@@ -20,6 +20,7 @@ function modal() {
     modalOpenBtn.forEach(item => {
         item.addEventListener('click', toggleModal);
     });
+    
     modalCloseBtn.addEventListener('click', toggleModal);
 
     function showModalByScroll() {
@@ -52,7 +53,7 @@ function modal() {
             thanksModal.remove();
             prevModalDialog.classList.add('show');
             prevModalDialog.classList.remove('hide');
-        }, 4000);
+        }, 20000);
     };
 }
 

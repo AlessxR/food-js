@@ -13,3 +13,5 @@ cards();
 calculator();
 forms();
 slider();
+
+console.log('import script,js');
